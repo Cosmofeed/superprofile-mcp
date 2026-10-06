@@ -1,0 +1,20 @@
+# Publishes server.json to the official MCP Registry.
+# Auth is GitHub OIDC (no stored secrets). Manual trigger only.
+name: Publish to MCP Registry
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install mcp-publisher v1.8.1 (checksum pinned)
+        run: |
+          curl -fsSL -o p.tgz https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz
+          echo "a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  p.tgz" | sha256sum -c -
+          tar xzf p.tgz mcp-publisher
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish
